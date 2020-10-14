@@ -1,31 +1,23 @@
-module.exports = function check(str, bracketsConfig) {
+function check(str, bracketsConfig) {
     const bracketsCount = bracketsConfig.length;
-    const bracketsCounter = new Array(bracketsCount);
+    const bracketsCounter = [];
     const bracketsArray = str.split('');
 
     while (bracketsArray.length > 0){
         const currentBracket = bracketsArray.shift();
         const currentBracketSet = getCurrentBracketSet(currentBracket);
-        isSetOrCreateBracketCounter(currentBracketSet);
         const currentBracketType = getCurrentBracketType(currentBracketSet, currentBracket);
-        
+        const openBracket = bracketsConfig[currentBracketSet][0];
+
         switch(currentBracketType){
-            case 'pair': bracketsCounter[currentBracketSet].length > 0 ?
-                            bracketsCounter[currentBracketSet].pop() :
-                            bracketsCounter[currentBracketSet].push(currentBracket); break;
-            case 'open': bracketsCounter[currentBracketSet].push(currentBracket); break;
-            case 'close': if (bracketsCounter[currentBracketSet].length > 0){
-                                bracketsCounter[currentBracketSet].pop();
-                            }
-                            else{
-                                return false;
-                            }
-                            break;
+            case 'pair': if (!pairBracketExec(currentBracket)) return false; break;
+            case 'open': bracketsCounter.push(currentBracket); break;
+            case 'close': if (!removeBracket(openBracket)) return false; break;
             default: return false;
         }
     }
 
-    return bracketsCounter[currentBracketSet].length > 0 ? false : true;
+    return bracketsCounter.length > 0 ? false : true;
 
     function getCurrentBracketSet(currentBracket) {
         for (let i = 0; i < bracketsCount; i++){
@@ -38,10 +30,17 @@ module.exports = function check(str, bracketsConfig) {
         }
     }
 
-    function isSetOrCreateBracketCounter(bracketSet) {
-        if ( !bracketsCounter[bracketSet]){
-            bracketsCounter[bracketSet] = [];
+    function pairBracketExec(currentBracket){
+        if (bracketsCounter.length > 0 && bracketsCounter[bracketsCounter.length - 1] === currentBracket){
+            return removeBracket(currentBracket);
+        } else {
+            bracketsCounter.push(currentBracket);
         }
+        return true;
+    }
+
+    function removeBracket(previousBracket){
+        return previousBracket === bracketsCounter.pop() ? true : false;
     }
 
     function getCurrentBracketType(bracketSetIndex, bracket) {
@@ -53,4 +52,6 @@ module.exports = function check(str, bracketsConfig) {
         }
         return 'close';
     }
-};
+}
+
+module.exports = check;
